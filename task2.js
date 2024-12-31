@@ -1,26 +1,36 @@
-function asyncFind(array, useCallback) {
-    return new Promise((resolve, reject) => {
-        let index = 0;
+async function asyncFind(array, checkCondition, delay) {
+    let index = 0;
+    while (index < array.length) {
+        const element = array[index];
+        index++;
 
-        function next() {
-            if (index >= array.length) {
-                return resolve(undefined);
+        const startTime = Date.now();
+
+        try {
+            const result = await checkCondition(element);
+            const timeToWait = Date.now() - startTime;
+
+            if (result) {
+                if (timeToWait < delay) {
+                    await new Promise(resolve => setTimeout(resolve, delay - timeToWait));
+                }
+                return element;
             }
-
-            const element = array[index];
-            index++;
-
-            useCallback(element, (err, result) => {
-                if (err) {
-                    return reject(err);
-                }
-                if (result) {
-                    return resolve(element);
-                } else {
-                    next();
-                }
-            });
+        } catch (err) {
+            throw err;
         }
-        next();
+    }
+    return undefined;
+}
+
+function asyncFindCheck(num, condition) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            try {
+                resolve(condition(num));
+            } catch (err) {
+                reject(err);
+            }
+        }, 1000);
     });
 }
