@@ -29,3 +29,53 @@ async function asyncFind(iterator, useCallback, delay, signal) {
 
     return undefined;
 }
+
+function asyncFindCheck(num, condition, signal) {
+    return new Promise((resolve, reject) => {
+        // Listen for the abort signal
+        if (signal.aborted) {
+            return reject(new Error("Operation aborted"));
+        }
+
+        const timeout = setTimeout(() => {
+            try {
+                resolve(condition(num));  // Resolve with the result of the condition
+            } catch (err) {
+                reject(err);  // Reject if an error occurs
+            }
+        }, 1000);
+
+        // Abort handler
+        signal.addEventListener('abort', () => {
+            clearTimeout(timeout);  // Cancel timeout if the operation is aborted
+            reject(new Error("Operation aborted"));
+        });
+    });
+}
+
+async function demoCases() {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    try {
+        const iterator = asyncLargeDataset();
+
+        const result1 = await asyncFind(iterator, (num) => asyncFindCheck(num, (num) => num % 5 === 0, signal), 500, signal);
+        console.log(result1);  // Should log 10, as it meets the condition.
+
+        // Cancel the operation early (for demo purposes)
+        controller.abort();
+
+        const result2 = await asyncFind(iterator, (num) => asyncFindCheck(num, (num) => num > 10, signal), 1000, signal);
+        console.log(result2);  // Should not reach this point if aborted.
+    } catch (err) {
+        if (err.message === "Operation aborted") {
+            console.log("The operation was canceled.");
+        } else {
+            console.error("Error occurred:", err);
+        }
+    }
+}
+
+// Running demo cases
+demoCases();
