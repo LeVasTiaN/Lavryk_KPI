@@ -1,5 +1,3 @@
-const numbers = [1, 2, 3, 4, 5];
-
 function asyncFind(array, useCallback, delay, callback) {
     let index = 0;
 
@@ -38,15 +36,34 @@ function asyncFind(array, useCallback, delay, callback) {
 function asyncFindCheck(num, condition, callback) {
     setTimeout(() => {
         callback(null, condition(num));
-    }, Math.random() * 1000);
+    }, 1000);
 }
-const isEven = (num) => num < 4;
 
+function DemoCases() {
 
-asyncFind(numbers, (num, cb) => asyncFindCheck(num, isEven, cb), 500, (err, result) => {
-    if (err) {
-        console.error("Error occurred:", err);
-    } else {
-        console.log(result);
-    }
-});
+    asyncFind([10, 15, 20, 25, 30], (num, cb) => asyncFindCheck(num, (num) => num % 5 === 0, cb), 500, (err, result) => {
+        if (err) {
+            console.error("Error occurred:", err);
+        } else {
+            console.log(result);
+        }
+    });
+
+    asyncFind([3, 7, 11, 19], (num, cb) => asyncFindCheck(num, (num) => num > 10, cb), 1000, (err, result) => {
+        if (err) {
+            console.error("Error occurred:", err);
+        } else {
+            console.log(result);
+        }
+    });
+
+    asyncFind([1, 8, 16, 32, 64], (num, cb) => asyncFindCheck(num, (num) => Math.log2(num) % 1 === 0, cb), 2000, (err, result) => {
+        if (err) {
+            console.error("Error occurred:", err);
+        } else {
+            console.log(result);
+        }
+    });
+}
+
+DemoCases();
