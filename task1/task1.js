@@ -1,21 +1,28 @@
 const numbers = [1, 2, 3, 4, 5];
 
-function asyncFind(array, callback) {
+function asyncFind(array, useCallback, callback) {
+    let index = 0;
 
-    function processNext(index) {
+    function next() {
         if (index >= array.length) {
-            return callback(undefined);
+            return callback(null, undefined);
         }
 
-        const e = array[index];
+        const element = array[index];
+        index++;
 
-        callback(e, function(result) {
-            if (result) {
-                return callback(e);
+        useCallback(element, (err, result) => {
+            if (err) {
+                return callback(err);
             }
-            processNext(index + 1);
+
+            if (result) {
+                return callback(null, element);
+            } else {
+                next();
+            }
         });
     }
-    processNext(0);
-}
 
+    next();
+}
