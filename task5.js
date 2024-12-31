@@ -38,6 +38,8 @@ async function asyncFind(iterator, checkCondition, delay, signal, emitter) {
             throw new Error("Operation aborted");
         }
 
+        emitter.emit('beforeCheck', element);
+
         try {
             const result = await checkCondition(element, signal);
 
@@ -53,6 +55,8 @@ async function asyncFind(iterator, checkCondition, delay, signal, emitter) {
                 console.error("Error processing element:", element, err);
                 emitter.emit('error', element, err);
             }
+        } finally {
+            emitter.emit('afterCheck', element);
         }
     }
 
@@ -86,12 +90,20 @@ async function demoCases() {
     const signal = controller.signal;
     const emitter = new EventEmitter();
 
+    emitter.on('beforeCheck', (element) => {
+        console.log(`Checking element: ${element}`);
+    });
+
     emitter.on('found', (element) => {
         console.log(`Found element: ${element}`);
     });
 
     emitter.on('aborted', (element) => {
         console.log(`Processing aborted for element: ${element}`);
+    });
+
+    emitter.on('afterCheck', (element) => {
+        console.log(`Finished processing element: ${element}`);
     });
 
     emitter.on('error', (element, err) => {
@@ -104,12 +116,12 @@ async function demoCases() {
 
 
     try {
-        const result1 = await asyncFind(asyncLargeDataset(), (num) => asyncFindCheck(num, (num) => num % 5 === 0, signal), 500, signal, emitter);
+        const result1 = await asyncFind(asyncLargeDataset(), (num) => asyncFindCheck(num, (num) => num % 15 === 0, signal), 500, signal, emitter);
         console.log(result1);
 
-        //controller.abort();
+        controller.abort();
 
-        const result2 = await asyncFind(asyncLargeDataset(), (num) => asyncFindCheck(num, (num) => num > 10, signal), 1000, signal, emitter);
+        const result2 = await asyncFind(asyncLargeDataset(), (num) => asyncFindCheck(num, (num) => num >= 50, signal), 1000, signal, emitter);
         console.log(result2);
     } catch (err) {
         if (err.message === "Operation aborted") {
