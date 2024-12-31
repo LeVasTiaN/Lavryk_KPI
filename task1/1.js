@@ -1,7 +1,10 @@
-// synchronous part to check whether the async part will work correctly
-
-const numbers = [1, 2, 3, 4, 5];
-const result = numbers.find((e) => e > 2);
-console.log(result);
-
-//actual task
+async function asyncFind(array, callback) {
+    for (const e of array) {
+        const result = await callback(e);
+        if (result) {
+            return e;
+        }
+    }
+}
+asyncFind(numbers, async (e) => e > 2)
+    .then((result) => console.log(result))
