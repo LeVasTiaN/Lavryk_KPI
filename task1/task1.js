@@ -26,3 +26,19 @@ function asyncFind(array, useCallback, callback) {
 
     next();
 }
+
+function asyncFindCheck(num, condition, callback) {
+    setTimeout(() => {
+        callback(null, condition(num));
+    }, Math.random() * 1000);
+}
+const isEven = (num) => num < 4;
+
+
+asyncFind(numbers, (num, callback) => asyncFindCheck(num, isEven, callback), (err, result) => {
+    if (err) {
+        console.error("Error occurred:", err);
+    } else {
+        console.log(result);
+    }
+});
