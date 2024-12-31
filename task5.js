@@ -48,8 +48,10 @@ async function asyncFind(iterator, checkCondition, delay, signal, emitter) {
         } catch (err) {
             if (err.message === "Operation aborted") {
                 console.log("Task was aborted.");
+                emitter.emit('aborted', element);
             } else {
                 console.error("Error processing element:", element, err);
+                emitter.emit('error', element, err);
             }
         }
     }
@@ -87,7 +89,15 @@ async function demoCases() {
     emitter.on('found', (element) => {
         console.log(`Found element: ${element}`);
     });
-    
+
+    emitter.on('aborted', (element) => {
+        console.log(`Processing aborted for element: ${element}`);
+    });
+
+    emitter.on('error', (element, err) => {
+        console.error(`Error during processing of element: ${element}`, err);
+    });
+
     emitter.on('notFound', () => {
         console.log(`No element found matching the criteria.`);
     });
