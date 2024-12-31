@@ -6,14 +6,14 @@ async function* asyncLargeDataset() {
     }
 }
 
-async function asyncFind(iterator, useCallback, delay, signal) {
+async function asyncFind(iterator, checkCondition, delay, signal) {
     for await (const element of iterator) {
         if (signal.aborted) {
             throw new Error("Operation aborted");
         }
 
         try {
-            const result = await useCallback(element, signal);
+            const result = await checkCondition(element, signal);
 
             if (result) {
                 return element;
