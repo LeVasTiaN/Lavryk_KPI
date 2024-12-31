@@ -1,13 +1,21 @@
-const numbers = [1, 2, 3, 4, 5]
+const numbers = [1, 2, 3, 4, 5];
 
-async function asyncFind(array, cond, callback) {
-    for (const e of array) {
-        const result = await callback(e);
-        if (result) {
-            return e;
+function asyncFind(array, callback) {
+
+    function processNext(index) {
+        if (index >= array.length) {
+            return callback(undefined);
         }
+
+        const e = array[index];
+
+        callback(e, function(result) {
+            if (result) {
+                return callback(e);
+            }
+            processNext(index + 1);
+        });
     }
-    return undefined;
+    processNext(0);
 }
 
-asyncFind(numbers, 6, async (e) => e >= 1).then((result) => console.log(result))
