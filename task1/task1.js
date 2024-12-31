@@ -1,6 +1,6 @@
 const numbers = [1, 2, 3, 4, 5];
 
-function asyncFind(array, useCallback, callback) {
+function asyncFind(array, useCallback, delay, callback) {
     let index = 0;
 
     function next() {
@@ -11,13 +11,21 @@ function asyncFind(array, useCallback, callback) {
         const element = array[index];
         index++;
 
+        const startTime = Date.now();
+
         useCallback(element, (err, result) => {
             if (err) {
                 return callback(err);
             }
 
+            const TimeToWait = Date.now() - startTime;
+
             if (result) {
-                return callback(null, element);
+                if (TimeToWait < delay) {
+                    setTimeout(() => callback(null, element), delay - TimeToWait);
+                } else {
+                    callback(null, element);
+                }
             } else {
                 next();
             }
@@ -35,7 +43,7 @@ function asyncFindCheck(num, condition, callback) {
 const isEven = (num) => num < 4;
 
 
-asyncFind(numbers, (num, callback) => asyncFindCheck(num, isEven, callback), (err, result) => {
+asyncFind(numbers, (num, cb) => asyncFindCheck(num, isEven, cb), 500, (err, result) => {
     if (err) {
         console.error("Error occurred:", err);
     } else {
